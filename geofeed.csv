@@ -1,5 +1,9 @@
 #Network,#Country,#Region,#City,#Postal_Code
 2a06:1287:ccff:6465:6c6f:6f70:6261:636b,DE,DE-HE,Frankfurt,
+2a06:1287:ccff:6c6f::6475:7331/128,DE,DE-NW,Düsseldorf,40472
+2a06:1287:ccff:6e73::6431:53/128,DE,DE-NW,Düsseldorf,40472
+2a06:1287:ccff:6e73::6432:53/128,DE,DE-NW,Düsseldorf,40472
+2a06:1287:ccff:6e73::746f:53/128,DE,DE-NW,Düsseldorf,40472
 2a10:cc44:1c0::/44,PL,PL-14,Warszawa,02-241
 2a10:cc44:01c0::/48,PL,PL-14,Warszawa,02-241
 2a10:cc44:01c1::/48,PL,PL-14,Warszawa,02-241
