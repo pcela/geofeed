@@ -1,10 +1,15 @@
 #Network,#Country,#Region,#City,#Postal_Code
-2a13:df85:bfff:6172:646e:7269:7065:2/128,DE,DE-BY,Nürnberg,90475
-2a13:df85:bfff:6174::6374/128,CA,CA-ON,Toronto,M5A 0G7
-2a13:df85:bfff:6c6f:7077::1/128,PL,PL-14,Warszawa,00-697
-2a13:df85:bfff:6c6f:646e::1/128,DE,DE-BY,Nürnberg,90475
-2a13:df85:bfff:6c6f:6374::1/128,CA,CA-ON,Toronto,M5A 0G7
 2a13:df85:bfff:6c6f:6e61::1/128,NL,NL-NH,Amsterdam,1098 XG
+2a13:df85:bfff:6c6f:6464::1/128,DE,DE-NW,Düsseldorf,40472
+2a13:df85:bfff:6172:646e:7269:7065:2/128,DE,DE-BY,Nürnberg,90475
+2a13:df85:bfff:6c6f:646e::1/128,DE,DE-BY,Nürnberg,90475
+2a13:df85:bfff:6174::6374/128,CA,CA-ON,Toronto,M5A 0G7
+2a13:df85:bfff:6c6f:6374::1/128,CA,CA-ON,Toronto,M5A 0G7
+2a13:df85:bfff:6c6f:7077::1/128,PL,PL-14,Warszawa,00-697
+2a13:df85:bfff:6e73:6464::/80,DE,DE-NW,Düsseldorf,40472
+2a13:df85:bfff:7263:6464::/80,DE,DE-NW,Düsseldorf,40472
+2a13:df85:bfff:6172::/64,DE,DE-BY,Nürnberg,90475
+2a13:df85:bfff:7261::/64,DE,DE-NW,Düsseldorf,40472
 2a10:cc44:1c0::/44,PL,PL-14,Warszawa,02-241
 2a10:cc44:01c0::/48,PL,PL-14,Warszawa,02-241
 2a10:cc44:01c1::/48,PL,PL-14,Warszawa,02-241
