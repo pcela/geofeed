@@ -29,10 +29,6 @@
             width: 100%;
             box-sizing: border-box;
         }
-        #map {
-            height: 400px;
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -46,7 +42,6 @@
     <table id="csv-table">
         <!-- Tabela zostanie wypełniona dynamicznie -->
     </table>
-    <div id="map"></div>
 
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
@@ -137,22 +132,28 @@
             }
         }
 
-        // Sprawdź, czy adres IPv6 jest poprawny
-        function isValidIPv6(address) {
-            const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:|%[0-9a-fA-F]{1,4})$/;
-            return ipv6Regex.test(address);
+        // Normalizuj adres IPv6
+        function normalizeIPv6(ip) {
+            return ip
+                .toLowerCase()
+                .replace(/(:\s*){2,}/g, '::')
+                .replace(/(\b\w{1,3}\b)\b/g, '0$1')
+                .replace(/(\b\w{4}\b)\b/g, '0000$1')
+                .replace(/(:{2,}|:)/g, ':')
+                .replace(/(:{2,})$/g, '');
         }
 
         // Sprawdź, czy adres znajduje się w zakresie
         function isInRange(ip, range) {
             // Konwersja IP i zakresu na liczby binarne
-            // Bardziej skomplikowana implementacja wymagana do pełnej obsługi
+            // Uproszczona wersja
             return ip.startsWith(range);
         }
 
         // Filtruj tabelę na podstawie tekstu w polu wyszukiwania
         function filterTable() {
             const input = document.getElementById('search-input').value.trim();
+            const normalizedInput = normalizeIPv6(input);
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
 
@@ -163,10 +164,11 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    if (isValidIPv6(input)) {
-                        if (isInRange(cellText, input)) {
-                            match = true;
-                        }
+                    const normalizedCellText = normalizeIPv6(cellText);
+
+                    // Sprawdź, czy adres IP jest w zakresie
+                    if (normalizedInput.length > 0 && isInRange(normalizedCellText, normalizedInput)) {
+                        match = true;
                     } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
                         match = true;
                     }
