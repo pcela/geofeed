@@ -46,13 +46,12 @@
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
-        const geonamesURL = 'http://api.geonames.org/'; // Geonames API endpoint
-        const geonamesUsername = 'your_geonames_username'; // Wprowadź swój użytkownik Geonames
+        const geonamesUsername = 'pcela'; // Wprowadź swój użytkownik Geonames
 
         // Pobierz mapowania kodów ISO 3166-1 alfa-2 na nazwy krajów
         async function getCountryNames() {
             try {
-                const response = await fetch(`https://restcountries.com/v3.1/all`);
+                const response = await fetch('https://restcountries.com/v3.1/all');
                 const countriesData = await response.json();
                 const countries = {};
                 countriesData.forEach(country => {
@@ -69,12 +68,12 @@
 
         // Pobierz mapowania kodów ISO 3166-2 na nazwy jednostek terytorialnych
         async function getAdministrativeUnits() {
-            const endpoint = 'http://api.geonames.org/administrativeDivisionsJSON';
+            const endpoint = `http://api.geonames.org/countrySubdivisionJSON?username=${geonamesUsername}`;
             try {
-                const response = await fetch(`${endpoint}?geonameId=Europe&username=${geonamesUsername}`);
+                const response = await fetch(endpoint);
                 const data = await response.json();
                 const units = {};
-                data.geonames.forEach(unit => {
+                data.subdivisions.forEach(unit => {
                     units[unit.code] = unit.name;
                 });
                 return units;
@@ -123,6 +122,7 @@
             }
         }
 
+        // Wczytaj plik CSV i wyświetl go w tabeli
         async function fetchCSV(file) {
             console.log('Pobieranie pliku CSV:', file);
             try {
@@ -163,68 +163,38 @@
                     table.appendChild(tr);
                 });
             } catch (error) {
-                console.error('Błąd podczas pobierania pliku CSV:', error);
+                console.error('Błąd:', error);
                 alert('Nie udało się pobrać pliku CSV. Spróbuj ponownie później.');
             }
         }
 
+        // Filtrowanie tabeli
         function filterTable() {
-            const input = document.getElementById('search-input').value.trim();
+            const input = document.getElementById('search-input');
+            const filter = input.value.toLowerCase();
             const table = document.getElementById('csv-table');
-            const rows = table.querySelectorAll('tr');
-            let matchedRows = [];
+            const rows = table.querySelectorAll('tr:not(:first-child)');
 
-            if (input === '') {
-                // Show all rows if search input is empty
-                rows.forEach((row, index) => {
-                    if (index === 0) return; // Skip header row
-                    row.style.display = '';
-                });
-                return;
-            }
-
-            rows.forEach((row, index) => {
-                if (index === 0) return; // Skip header row
+            rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
-                let isMatch = false;
-
-                cells.forEach(cell => {
-                    const cellText = cell.textContent.trim();
-                    if (cellText.includes('/')) { // Check if cell contains a range
-                        if (isInRange(input, cellText)) {
-                            isMatch = true;
-                        }
-                    } else if (input && cellText.toLowerCase().includes(input.toLowerCase())) {
-                        isMatch = true;
-                    }
-                });
-
-                if (isMatch) {
-                    matchedRows.push(row);
-                }
-            });
-
-            // Ukryj wszystkie wiersze
-            rows.forEach((row, index) => {
-                if (index === 0) return; // Skip header row
-                row.style.display = 'none';
-            });
-
-            // Pokaż tylko dopasowane wiersze
-            matchedRows.forEach(row => {
-                row.style.display = '';
+                const match = Array.from(cells).some(cell => cell.textContent.toLowerCase().includes(filter));
+                row.style.display = match ? '' : 'none';
             });
         }
 
-        document.getElementById('csv-select').addEventListener('change', function () {
-            const file = this.value;
+        // Obsługuje zmianę wyboru pliku CSV
+        document.getElementById('csv-select').addEventListener('change', async (event) => {
+            const file = event.target.value;
             if (file) {
-                fetchCSV(file);
+                await fetchCSV(file);
+                filterTable(); // Filtrowanie po załadowaniu pliku
             }
         });
 
+        // Obsługuje wpisywanie w polu wyszukiwania
         document.getElementById('search-input').addEventListener('input', filterTable);
 
+        // Inicjalizacja aplikacji
         populateSelect();
     </script>
 </body>
