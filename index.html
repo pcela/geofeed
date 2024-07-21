@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista plików</title>
+    <script>
+        async function fetchFiles() {
+            const repo = 'pcela/geofeed';
+            const branch = 'main';
+            const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`);
+            const data = await response.json();
+            const files = data.tree.filter(item => item.type === 'blob');
+            const list = document.getElementById('file-list');
+
+            files.forEach(file => {
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = `https://github.com/${repo}/blob/${branch}/${file.path}`;
+                link.textContent = file.path;
+                listItem.appendChild(link);
+                list.appendChild(listItem);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchFiles);
+    </script>
+</head>
+<body>
+    <h1>Lista plików</h1>
+    <ul id="file-list">
+        <!-- Pliki zostaną dodane tutaj dynamicznie -->
+    </ul>
+</body>
+</html>
