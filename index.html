@@ -153,8 +153,8 @@
                     const cellText = cell.textContent.trim();
                     if (input.includes(':') && input.includes('/')) { // Zakłada, że szukany tekst jest adresem IP z maską
                         const [ip, mask] = input.split('/');
-                        const ipAddress = new Address(ip);
-                        if (ipAddress.isValid() && isIPv6InRange(cellText, ip, parseInt(mask))) {
+                        const address = new Address6(ip);
+                        if (address.isValid() && isIPv6InRange(address, ip, parseInt(mask))) {
                             match = true;
                         }
                     } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
@@ -167,9 +167,9 @@
         }
 
         // Funkcja sprawdzająca, czy adres IPv6 mieści się w zakresie
-        function isIPv6InRange(ip, range, maskLength) {
-            const ipBinary = ipToBinary(ip);
-            const rangeBinary = ipToBinary(range);
+        function isIPv6InRange(address, range, maskLength) {
+            const ipBinary = ipToBinary(address);
+            const rangeBinary = ipToBinary(new Address6(range));
             const maskBinary = '1'.repeat(maskLength) + '0'.repeat(128 - maskLength);
 
             return (ipBinary & maskBinary) === (rangeBinary & maskBinary);
