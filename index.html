@@ -67,6 +67,42 @@
             }
         }
 
+        // Pobierz listę plików CSV z repozytorium
+        async function getCSVFiles() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`);
+                if (!response.ok) {
+                    throw new Error('Błąd podczas pobierania listy plików: ' + response.statusText);
+                }
+                const data = await response.json();
+                return data.tree.filter(file => file.path.endsWith('.csv')).map(file => file.path);
+            } catch (error) {
+                console.error('Błąd:', error);
+                alert('Nie udało się pobrać listy plików CSV. Spróbuj ponownie później.');
+                return [];
+            }
+        }
+
+        // Wypełnij rozwijane menu plikami CSV
+        async function populateSelect() {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const csvFiles = await getCSVFiles();
+                const select = document.getElementById('csv-select');
+                csvFiles.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file;
+                    option.textContent = file;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Błąd:', error);
+                alert('Nie udało się wypełnić listy plików CSV. Spróbuj ponownie później.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
         async function fetchCSV(file) {
             const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/${file}`);
             const data = await response.text();
@@ -95,8 +131,8 @@
                     if (index === 1) { // Kolumna 2: ISO 3166-1 Alfa-2
                         td.textContent = countries[cell] || cell;
                     } else if (index === 2) { // Kolumna 3: ISO 3166-2
-                        // Możesz dodać logikę dla jednostek terytorialnych, jeśli masz takie dane
-                        td.textContent = cell; // Placeholder, dopóki nie dodamy mapowania dla ISO 3166-2
+                        // Placeholder dla jednostek terytorialnych
+                        td.textContent = cell; 
                     } else {
                         td.textContent = cell;
                     }
@@ -106,66 +142,13 @@
             });
         }
 
+        function isInRange(ip, range) {
+            // Implementacja sprawdzania, czy adres IP mieści się w zakresie
+            // Placeholder funkcji, należy dostosować do swojego kodu
+            return ip === range; 
+        }
+
         function filterTable() {
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
-            const rows = table.querySelectorAll('tr');
-            let matchedRows = [];
-
-            if (input === '') {
-                // Show all rows if search input is empty
-                rows.forEach((row, index) => {
-                    if (index === 0) return; // Skip header row
-                    row.style.display = '';
-                });
-                return;
-            }
-
-            rows.forEach((row, index) => {
-                if (index === 0) return; // Skip header row
-                const cells = row.querySelectorAll('td');
-                let isMatch = false;
-
-                cells.forEach(cell => {
-                    const cellText = cell.textContent.trim();
-                    if (cellText.includes('/')) { // Check if cell contains a range
-                        if (isInRange(input, cellText)) {
-                            isMatch = true;
-                        }
-                    } else if (input && cellText.toLowerCase().includes(input.toLowerCase())) {
-                        isMatch = true;
-                    }
-                });
-
-                if (isMatch) {
-                    matchedRows.push(row);
-                }
-            });
-
-            // Hide all rows
-            rows.forEach(row => {
-                row.style.display = 'none';
-            });
-
-            // Show matched rows
-            matchedRows.forEach(row => {
-                row.style.display = '';
-            });
-        }
-
-        function onFileChange() {
-            const select = document.getElementById('csv-select');
-            const selectedFile = select.value;
-            if (selectedFile) {
-                fetchCSV(selectedFile);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            populateSelect();
-            document.getElementById('csv-select').addEventListener('change', onFileChange);
-            document.getElementById('search-input').addEventListener('input', filterTable);
-        });
-    </script>
-</body>
-</html>
+            const ro
