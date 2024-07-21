@@ -149,6 +149,8 @@
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
+
+            // Opóźnione zainicjowanie Address6
             const ipAddress = new Address6(input);
 
             rows.forEach((row, index) => {
