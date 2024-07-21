@@ -156,8 +156,12 @@
                     const cellText = cell.textContent.trim();
                     if (input.length > 0) {
                         // Sprawdź, czy adres IP znajduje się w zakresie
-                        if (isAddressInRange(input, cellText)) {
-                            match = true;
+                        try {
+                            if (isAddressInRange(input, cellText)) {
+                                match = true;
+                            }
+                        } catch (e) {
+                            console.error('Błąd przy porównywaniu adresów:', e);
                         }
                     } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
                         match = true;
