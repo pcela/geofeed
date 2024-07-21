@@ -123,6 +123,15 @@
             const rows = table.querySelectorAll('tr');
             let matchedRows = [];
 
+            if (input === '') {
+                // Show all rows if search input is empty
+                rows.forEach((row, index) => {
+                    if (index === 0) return; // Skip header row
+                    row.style.display = '';
+                });
+                return;
+            }
+
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header row
                 const cells = row.querySelectorAll('td');
