@@ -33,11 +33,11 @@
 </head>
 <body>
     <h1>Wyświetlanie plików CSV</h1>
-    <input type="text" id="search-input" placeholder="Szukaj w tabeli...">
     <label for="csv-select">Wybierz plik CSV:</label>
     <select id="csv-select">
         <option value="">Wybierz plik</option>
     </select>
+    <input type="text" id="search-input" placeholder="Szukaj w tabeli...">
     <div id="loading">Ładowanie...</div>
     <table id="csv-table">
         <!-- Tabela zostanie wypełniona dynamicznie -->
@@ -47,6 +47,9 @@
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
+
+        const dataStore = {}; // Przechowuje dane z wszystkich plików CSV
+        let currentFile = null; // Aktualnie wybrany plik CSV
 
         // Funkcja konwertująca IPv6 na obiekt IPAddress
         function ipToAddress(ip) {
@@ -99,27 +102,44 @@
                 const data = await response.text();
                 const rows = data.split('\n').map(row => row.split(','));
 
-                const table = document.getElementById('csv-table');
-                table.innerHTML = ''; // Wyczyść tabelę przed załadowaniem nowego pliku
+                if (rows.length === 0) return;
 
-                // Dodaj nagłówki tabeli
-                const headerRow = document.createElement('tr');
-                rows[0].forEach(header => {
-                    const th = document.createElement('th');
-                    th.textContent = header;
-                    headerRow.appendChild(th);
-                });
-                table.appendChild(headerRow);
+                // Sprawdź, czy tabela jest już wypełniona nagłówkami
+                if (!document.querySelector('#csv-table thead')) {
+                    // Dodaj nagłówki tabeli
+                    const table = document.getElementById('csv-table');
+                    const headerRow = document.createElement('tr');
+                    rows[0].forEach(header => {
+                        const th = document.createElement('th');
+                        th.textContent = header;
+                        headerRow.appendChild(th);
+                    });
+                    const thead = document.createElement('thead');
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+                }
 
                 // Dodaj wiersze tabeli
-                for (let i = 1; i < rows.length; i++) {
+                const tbody = document.querySelector('#csv-table tbody') || document.createElement('tbody');
+                rows.slice(1).forEach(row => {
                     const tr = document.createElement('tr');
-                    rows[i].forEach(cell => {
+                    row.forEach(cell => {
                         const td = document.createElement('td');
                         td.textContent = cell;
                         tr.appendChild(td);
                     });
-                    table.appendChild(tr);
+                    tbody.appendChild(tr);
+                });
+                if (!document.querySelector('#csv-table tbody')) {
+                    document.getElementById('csv-table').appendChild(tbody);
+                }
+
+                // Przechowaj dane w dataStore
+                dataStore[file] = rows.slice(1);
+
+                // Wyświetl dane tylko dla aktualnie wybranego pliku
+                if (currentFile === file) {
+                    updateTable();
                 }
             } catch (error) {
                 console.error('Błąd:', error);
@@ -127,18 +147,43 @@
             }
         }
 
+        // Zaktualizuj tabelę po dodaniu nowych danych
+        function updateTable() {
+            const table = document.getElementById('csv-table');
+            const tbody = table.querySelector('tbody');
+
+            if (tbody) {
+                tbody.innerHTML = ''; // Wyczyść istniejące wiersze
+                dataStore[currentFile].forEach(row => {
+                    const tr = document.createElement('tr');
+                    row.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
         // Funkcja wywoływana po zmianie wybranego pliku
-        function onFileChange() {
+        async function onFileChange() {
             const select = document.getElementById('csv-select');
-            const selectedFile = select.value;
-            if (selectedFile) {
-                fetchCSV(selectedFile);
+            currentFile = select.value;
+            if (currentFile) {
+                document.getElementById('loading').style.display = 'block'; // Pokaż komunikat o ładowaniu
+                if (!dataStore[currentFile]) {
+                    await fetchCSV(currentFile);
+                } else {
+                    updateTable(); // Wyświetl dane z cache
+                }
+                document.getElementById('loading').style.display = 'none'; // Ukryj komunikat o ładowaniu
             }
         }
 
         // Inicjalizacja strony
-        document.addEventListener('DOMContentLoaded', () => {
-            populateSelect();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await populateSelect();
             document.getElementById('csv-select').addEventListener('change', onFileChange);
             document.getElementById('search-input').addEventListener('input', filterTable);
         });
