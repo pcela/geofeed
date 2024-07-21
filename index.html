@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV1</title>
+    <title>Wyświetlanie plików CSV2</title>
     <style>
         table {
             width: 100%;
@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-    <h1>Wyświetlanie plików CSV</h1>
+    <h1>Wyświetlanie plików CSV - 2</h1>
     <input type="text" id="search-input" placeholder="Szukaj w tabeli...">
     <label for="csv-select">Wybierz plik CSV:</label>
     <select id="csv-select">
@@ -142,8 +142,10 @@
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
                     const range = cellText.split(',')[0];
-                    if (isInRange(input, range)) { // Zakłada, że pierwszy element to zakres
-                        match = true;
+                    if (range.includes('/')) { // Sprawdzenie, czy zakres jest poprawnie sformatowany
+                        if (isInRange(input, range)) { // Zakłada, że pierwszy element to zakres
+                            match = true;
+                        }
                     }
                 });
 
