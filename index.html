@@ -43,7 +43,7 @@
         <!-- Tabela zostanie wypełniona dynamicznie -->
     </table>
 
-    <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ipv6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ip-address.min.js"></script>
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
@@ -135,9 +135,9 @@
 
         // Sprawdź, czy adres znajduje się w zakresie
         function isAddressInRange(address, range) {
-            const ip = new Address6(address);
+            const ipAddress = new Address6(address);
             const subnet = new Address6(range);
-            return ip.isInSubnet(subnet);
+            return ipAddress.isInSubnet(subnet);
         }
 
         // Filtruj tabelę na podstawie tekstu w polu wyszukiwania
