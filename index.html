@@ -126,7 +126,7 @@
             return rangeBits === ipBits;
         }
 
-        async function filterTable() {
+        function filterTable() {
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
@@ -138,7 +138,7 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    if (isInRange(input, cellText)) {
+                    if (isInRange(input, cellText.split(',')[0])) { // Zakłada, że pierwszy element to zakres
                         match = true;
                     }
                 });
