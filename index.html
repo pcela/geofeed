@@ -132,9 +132,20 @@
             }
         }
 
+        // Funkcja pomocnicza do rozszerzania skróconej notacji IPv6
+        function expandIPv6Address(address) {
+            const fullAddress = address.split('::').map(part => part.split(':'));
+            if (fullAddress.length === 1) return address; // Already expanded
+            const left = fullAddress[0];
+            const right = fullAddress[1] || [];
+            const missing = 8 - (left.length + right.length);
+            return [...left, ...Array(missing).fill('0000'), ...right].map(part => part.padStart(4, '0')).join(':');
+        }
+
         // Funkcja pomocnicza do konwersji adresu IPv6 na liczbę
         function ipv6ToNumber(ip) {
-            const parts = ip.split(':').map(part => parseInt(part, 16));
+            const expanded = expandIPv6Address(ip);
+            const parts = expanded.split(':').map(part => parseInt(part, 16));
             let num = 0n;
             parts.forEach(part => num = (num << 16n) | BigInt(part));
             return num;
