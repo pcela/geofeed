@@ -138,12 +138,32 @@
             }
         }
 
-        // Funkcja konwertująca adres IPv6 na format binarny
-        function ipToBinary(ip) {
-            return ip.split(':').map(part => {
-                let bin = parseInt(part, 16).toString(2);
-                return bin.padStart(16, '0');
-            }).join('');
+        // Filtruj tabelę na podstawie tekstu w polu wyszukiwania
+        function filterTable() {
+            const input = document.getElementById('search-input').value.trim();
+            const table = document.getElementById('csv-table');
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach((row, index) => {
+                if (index === 0) return; // Pomijaj nagłówki tabeli
+                const cells = row.querySelectorAll('td');
+                let match = false;
+
+                cells.forEach(cell => {
+                    const cellText = cell.textContent.trim();
+                    if (input.includes(':') && input.includes('/')) { // Zakłada, że szukany tekst jest adresem IP z maską
+                        const [ip, mask] = input.split('/');
+                        const ipAddress = new Address(ip);
+                        if (ipAddress.isValid() && isIPv6InRange(cellText, ip, parseInt(mask))) {
+                            match = true;
+                        }
+                    } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
+                        match = true;
+                    }
+                });
+
+                row.style.display = match ? '' : 'none';
+            });
         }
 
         // Funkcja sprawdzająca, czy adres IPv6 mieści się w zakresie
@@ -155,33 +175,12 @@
             return (ipBinary & maskBinary) === (rangeBinary & maskBinary);
         }
 
-        // Filtruj tabelę na podstawie tekstu w polu wyszukiwania
-        function filterTable() {
-            const input = document.getElementById('search-input').value.trim();
-            const table = document.getElementById('csv-table');
-            const rows = table.querySelectorAll('tr');
-            const ipAddress = new Address(input);
-
-            rows.forEach((row, index) => {
-                if (index === 0) return; // Pomijaj nagłówki tabeli
-                const cells = row.querySelectorAll('td');
-                let match = false;
-
-                cells.forEach(cell => {
-                    const cellText = cell.textContent.trim();
-                    if (ipAddress.isValid()) {
-                        // Sprawdzaj pasujące IP
-                        const [ip, mask] = input.split('/');
-                        if (isIPv6InRange(cellText, ip, parseInt(mask))) {
-                            match = true;
-                        }
-                    } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
-                        match = true;
-                    }
-                });
-
-                row.style.display = match ? '' : 'none';
-            });
+        // Funkcja konwertująca adres IPv6 na format binarny
+        function ipToBinary(ip) {
+            return ip.split(':').map(part => {
+                let bin = parseInt(part, 16).toString(2);
+                return bin.padStart(16, '0');
+            }).join('');
         }
 
         // Funkcja wywoływana po zmianie wybranego pliku
