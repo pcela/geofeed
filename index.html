@@ -43,7 +43,6 @@
         <!-- Tabela zostanie wypełniona dynamicznie -->
     </table>
 
-    <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ip-address.min.js"></script>
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
@@ -133,11 +132,22 @@
             }
         }
 
+        // Funkcja pomocnicza do konwersji adresu IPv6 na liczbę
+        function ipv6ToNumber(ip) {
+            const parts = ip.split(':').map(part => parseInt(part, 16));
+            let num = 0n;
+            parts.forEach(part => num = (num << 16n) | BigInt(part));
+            return num;
+        }
+
         // Sprawdź, czy adres znajduje się w zakresie
         function isAddressInRange(address, range) {
-            const ipAddress = new Address6(address);
-            const subnet = new Address6(range);
-            return ipAddress.isInSubnet(subnet);
+            const [rangeStart, rangeLength] = range.split('/');
+            const ip = ipv6ToNumber(address);
+            const start = ipv6ToNumber(rangeStart);
+            const length = parseInt(rangeLength);
+            const mask = (BigInt(1) << BigInt(128 - length)) - BigInt(1);
+            return (ip & ~mask) === (start & ~mask);
         }
 
         // Filtruj tabelę na podstawie tekstu w polu wyszukiwania
