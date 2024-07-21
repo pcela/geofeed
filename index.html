@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV2</title>
+    <title>Wyświetlanie plików CSV -3 </title>
     <style>
         table {
             width: 100%;
@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-    <h1>Wyświetlanie plików CSV - 2</h1>
+    <h1>Wyświetlanie plików CSV - 3</h1>
     <input type="text" id="search-input" placeholder="Szukaj w tabeli...">
     <label for="csv-select">Wybierz plik CSV:</label>
     <select id="csv-select">
@@ -121,9 +121,8 @@
             const [rangeIP, prefixLength] = range.split('/');
             const parsedIP = parseIPv6(ip);
             const parsedRangeIP = parseIPv6(rangeIP);
-            const rangeBits = parsedRangeIP.slice(0, Math.floor(prefixLength / 4));
-            const ipBits = parsedIP.slice(0, Math.floor(prefixLength / 4));
-            console.log(`Comparing IP: ${ipBits} with Range: ${rangeBits}`);
+            const rangeBits = parsedRangeIP.slice(0, Math.floor(prefixLength / 4) * 4);
+            const ipBits = parsedIP.slice(0, Math.floor(prefixLength / 4) * 4);
             return rangeBits === ipBits;
         }
 
@@ -132,24 +131,38 @@
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
 
-            console.log(`Searching for IP: ${input}`);
-            
+            const matches = [];
+
             rows.forEach((row, index) => {
                 if (index === 0) return; // Pomijaj nagłówki tabeli
                 const cells = row.querySelectorAll('td');
-                let match = false;
+                let mostSpecificMatch = null;
+                let maxPrefixLength = -1;
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
                     const range = cellText.split(',')[0];
                     if (range.includes('/')) { // Sprawdzenie, czy zakres jest poprawnie sformatowany
-                        if (isInRange(input, range)) { // Zakłada, że pierwszy element to zakres
-                            match = true;
+                        const prefixLength = parseInt(range.split('/')[1], 10);
+                        if (isInRange(input, range) && prefixLength > maxPrefixLength) {
+                            mostSpecificMatch = row;
+                            maxPrefixLength = prefixLength;
                         }
                     }
                 });
 
-                row.style.display = match ? '' : 'none';
+                if (mostSpecificMatch) {
+                    matches.push(mostSpecificMatch);
+                }
+            });
+
+            // Wyświetl tylko najbardziej precyzyjne pasowanie
+            rows.forEach(row => {
+                row.style.display = 'none';
+            });
+
+            matches.forEach(row => {
+                row.style.display = '';
             });
         }
 
