@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV -3 </title>
+    <title>Wyświetlanie plików CSV4</title>
     <style>
         table {
             width: 100%;
@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-    <h1>Wyświetlanie plików CSV - 3</h1>
+    <h1>Wyświetlanie plików CSV</h1>
     <input type="text" id="search-input" placeholder="Szukaj w tabeli...">
     <label for="csv-select">Wybierz plik CSV:</label>
     <select id="csv-select">
@@ -121,9 +121,9 @@
             const [rangeIP, prefixLength] = range.split('/');
             const parsedIP = parseIPv6(ip);
             const parsedRangeIP = parseIPv6(rangeIP);
-            const rangeBits = parsedRangeIP.slice(0, Math.floor(prefixLength / 4) * 4);
             const ipBits = parsedIP.slice(0, Math.floor(prefixLength / 4) * 4);
-            return rangeBits === ipBits;
+            const rangeBits = parsedRangeIP.slice(0, Math.floor(prefixLength / 4) * 4);
+            return ipBits === rangeBits;
         }
 
         function filterTable() {
@@ -141,12 +141,14 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    const range = cellText.split(',')[0];
-                    if (range.includes('/')) { // Sprawdzenie, czy zakres jest poprawnie sformatowany
-                        const prefixLength = parseInt(range.split('/')[1], 10);
-                        if (isInRange(input, range) && prefixLength > maxPrefixLength) {
-                            mostSpecificMatch = row;
-                            maxPrefixLength = prefixLength;
+                    if (cellText.includes('/')) { // Sprawdzenie, czy zakres jest poprawnie sformatowany
+                        const [range, prefixLength] = cellText.split('/');
+                        if (isInRange(input, cellText)) {
+                            const length = parseInt(prefixLength, 10);
+                            if (length > maxPrefixLength) {
+                                mostSpecificMatch = row;
+                                maxPrefixLength = length;
+                            }
                         }
                     }
                 });
