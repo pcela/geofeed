@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV7</title>
+    <title>Wyświetlanie plików CSV</title>
     <style>
         table {
             width: 100%;
@@ -123,13 +123,12 @@
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
             
-            let matchedRows = [];
+            let bestMatch = null;
+            let maxPrefixLength = -1;
 
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header row
                 const cells = row.querySelectorAll('td');
-                let bestMatch = null;
-                let maxPrefixLength = -1;
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
@@ -143,10 +142,6 @@
                         }
                     }
                 });
-
-                if (bestMatch) {
-                    matchedRows.push(bestMatch);
-                }
             });
 
             // Hide all rows initially
@@ -154,10 +149,10 @@
                 row.style.display = 'none';
             });
 
-            // Show only the best matches
-            matchedRows.forEach(row => {
-                row.style.display = '';
-            });
+            // Show only the best match
+            if (bestMatch) {
+                bestMatch.style.display = '';
+            }
         }
 
         function onFileChange() {
