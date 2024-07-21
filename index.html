@@ -18,6 +18,11 @@
             background-color: #f2f2f2;
             text-align: left;
         }
+        #loading {
+            display: none;
+            margin: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -26,26 +31,28 @@
     <select id="csv-select">
         <option value="">Wybierz plik</option>
     </select>
+    <div id="loading">Ładowanie...</div>
     <table id="csv-table">
         <!-- Tabela zostanie wypełniona dynamicznie -->
     </table>
 
     <script>
-        const repo = 'pcela/geofeed'; // Twoja nazwa użytkownika i repozytorium
-        const branch = 'main'; // Główna gałąź
+        const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
+        const branch = 'main'; // Zastąp nazwą głównej gałęzi
 
         // Pobierz mapowanie nazw plików na przyjazne nazwy
         async function getFileMappings() {
             try {
                 const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/mapping.json`);
                 if (!response.ok) {
-                    throw new Error('Błąd podczas pobierania mapowania');
+                    throw new Error('Błąd podczas pobierania mapowania: ' + response.statusText);
                 }
                 const data = await response.json();
-                console.log('Mapa plików:', data); // Dodano logowanie mapy plików
+                console.log('Mapa plików:', data);
                 return data;
             } catch (error) {
                 console.error('Błąd:', error);
+                alert('Nie udało się pobrać mapowania plików. Spróbuj ponownie później.');
                 return {};
             }
         }
@@ -55,69 +62,83 @@
             try {
                 const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`);
                 if (!response.ok) {
-                    throw new Error('Błąd podczas pobierania plików');
+                    throw new Error('Błąd podczas pobierania listy plików: ' + response.statusText);
                 }
                 const data = await response.json();
-                const csvFiles = data.tree.filter(file => file.path.endsWith('.csv')).map(file => file.path);
-                console.log('Pliki CSV:', csvFiles); // Dodano logowanie plików CSV
-                return csvFiles;
+                return data.tree.filter(file => file.path.endsWith('.csv')).map(file => file.path);
             } catch (error) {
                 console.error('Błąd:', error);
+                alert('Nie udało się pobrać listy plików CSV. Spróbuj ponownie później.');
                 return [];
             }
         }
 
-        // Wypełnij listę rozwijającą plikami CSV
+        // Wypełnij rozwijane menu plikami CSV
         async function populateSelect() {
-            const csvFiles = await getCSVFiles();
-            const fileMappings = await getFileMappings();
-            const select = document.getElementById('csv-select');
-            csvFiles.forEach(file => {
-                const option = document.createElement('option');
-                option.value = file;
-                option.textContent = fileMappings[file] || file; // Użyj przyjaznej nazwy lub domyślnej nazwy pliku
-                select.appendChild(option);
-            });
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const csvFiles = await getCSVFiles();
+                const fileMappings = await getFileMappings();
+                const select = document.getElementById('csv-select');
+                csvFiles.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file;
+                    option.textContent = fileMappings[file] || file; // Użyj przyjaznej nazwy lub domyślnej nazwy pliku
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Błąd:', error);
+                alert('Nie udało się wypełnić listy plików CSV. Spróbuj ponownie później.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
         }
 
-        // Pobierz zawartość pliku CSV i wyświetl ją w tabeli
+        // Wczytaj i wyświetl plik CSV
         async function fetchCSV(file) {
             try {
                 const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/${file}`);
                 if (!response.ok) {
-                    throw new Error('Błąd podczas pobierania pliku CSV');
+                    throw new Error('Błąd podczas pobierania pliku CSV: ' + response.statusText);
                 }
                 const data = await response.text();
-                const rows = data.split('\n').map(row => row.split(','));
+                const rows = data.split('\n').map(row => {
+                    // Usuwanie nadmiarowych przecinków na końcu wiersza
+                    const cells = row.split(',').map(cell => cell.trim());
+                    return cells;
+                }).filter(row => row.length > 0); // Filtruj puste wiersze
 
                 const table = document.getElementById('csv-table');
                 table.innerHTML = ''; // Wyczyść tabelę przed załadowaniem nowego pliku
 
                 // Dodaj nagłówki tabeli
-                const headerRow = document.createElement('tr');
-                rows[0].forEach(header => {
-                    const th = document.createElement('th');
-                    th.textContent = header;
-                    headerRow.appendChild(th);
-                });
-                table.appendChild(headerRow);
-
-                // Dodaj wiersze tabeli
-                for (let i = 1; i < rows.length; i++) {
-                    const tr = document.createElement('tr');
-                    rows[i].forEach(cell => {
-                        const td = document.createElement('td');
-                        td.textContent = cell;
-                        tr.appendChild(td);
+                if (rows.length > 0) {
+                    const headerRow = document.createElement('tr');
+                    rows[0].forEach(header => {
+                        const th = document.createElement('th');
+                        th.textContent = header;
+                        headerRow.appendChild(th);
                     });
-                    table.appendChild(tr);
+                    table.appendChild(headerRow);
+
+                    // Dodaj wiersze tabeli
+                    for (let i = 1; i < rows.length; i++) {
+                        const tr = document.createElement('tr');
+                        rows[i].forEach(cell => {
+                            const td = document.createElement('td');
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        table.appendChild(tr);
+                    }
                 }
             } catch (error) {
                 console.error('Błąd:', error);
+                alert('Nie udało się wczytać pliku CSV. Spróbuj ponownie później.');
             }
         }
 
-        // Funkcja wywoływana przy zmianie wyboru w liście rozwijanej
+        // Funkcja wywoływana po zmianie wybranego pliku
         function onFileChange() {
             const select = document.getElementById('csv-select');
             const selectedFile = select.value;
@@ -126,6 +147,7 @@
             }
         }
 
+        // Inicjalizacja strony
         document.addEventListener('DOMContentLoaded', () => {
             populateSelect();
             document.getElementById('csv-select').addEventListener('change', onFileChange);
