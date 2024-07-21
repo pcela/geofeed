@@ -48,7 +48,6 @@
     </table>
     <div id="map"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ip-address.min.js"></script>
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
@@ -138,6 +137,19 @@
             }
         }
 
+        // Sprawdź, czy adres IPv6 jest poprawny
+        function isValidIPv6(address) {
+            const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:|%[0-9a-fA-F]{1,4})$/;
+            return ipv6Regex.test(address);
+        }
+
+        // Sprawdź, czy adres znajduje się w zakresie
+        function isInRange(ip, range) {
+            // Konwersja IP i zakresu na liczby binarne
+            // Bardziej skomplikowana implementacja wymagana do pełnej obsługi
+            return ip.startsWith(range);
+        }
+
         // Filtruj tabelę na podstawie tekstu w polu wyszukiwania
         function filterTable() {
             const input = document.getElementById('search-input').value.trim();
@@ -151,17 +163,12 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    try {
-                        const ip = new Address6(input);
-                        if (ip.isValid()) {
-                            // Dopasowanie IP w formacie CIDR lub jakiekolwiek inne zaawansowane sprawdzenie
+                    if (isValidIPv6(input)) {
+                        if (isInRange(cellText, input)) {
                             match = true;
                         }
-                    } catch (e) {
-                        // Jeśli input nie jest poprawnym IP
-                        if (cellText.toLowerCase().includes(input.toLowerCase())) {
-                            match = true;
-                        }
+                    } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
+                        match = true;
                     }
                 });
 
