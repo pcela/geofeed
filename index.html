@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV</title>
+    <title>Wyświetlanie plików CSV1title>
     <style>
         table {
             width: 100%;
@@ -99,21 +99,20 @@
             }
         }
 
-        function parseIPv6(ip) {
-            // Convert IPv6 address to binary string
-            const parts = ip.split(':');
-            const bin = parts.map(part => part.padStart(4, '0')).join('');
-            return bin;
+        function ipv6ToBinary(ip) {
+            const hex = ip.split(':').map(part => part.padStart(4, '0')).join('');
+            return hex.split('').map(c => ('0000' + parseInt(c, 16).toString(2)).slice(-4)).join('');
         }
 
         function isInRange(ip, range) {
             const [rangeIP, prefixLength] = range.split('/');
-            const ipBin = parseIPv6(ip);
-            const rangeBin = parseIPv6(rangeIP);
+            const ipBinary = ipv6ToBinary(ip);
+            const rangeBinary = ipv6ToBinary(rangeIP);
 
             // Check if the IP is within the specified range
-            const ipPart = ipBin.slice(0, parseInt(prefixLength, 10));
-            const rangePart = rangeBin.slice(0, parseInt(prefixLength, 10));
+            const prefix = parseInt(prefixLength, 10);
+            const ipPart = ipBinary.slice(0, prefix);
+            const rangePart = rangeBinary.slice(0, prefix);
             
             return ipPart === rangePart;
         }
@@ -122,8 +121,8 @@
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
-            
-            let bestMatch = null;
+
+            let bestMatchRow = null;
             let maxPrefixLength = -1;
 
             rows.forEach((row, index) => {
@@ -136,7 +135,7 @@
                         if (isInRange(input, cellText)) {
                             const prefixLength = parseInt(cellText.split('/')[1], 10);
                             if (prefixLength > maxPrefixLength) {
-                                bestMatch = row;
+                                bestMatchRow = row;
                                 maxPrefixLength = prefixLength;
                             }
                         }
@@ -150,8 +149,8 @@
             });
 
             // Show only the best match
-            if (bestMatch) {
-                bestMatch.style.display = '';
+            if (bestMatchRow) {
+                bestMatchRow.style.display = '';
             }
         }
 
