@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV</title>
+    <title>Wyświetlanie plików CSV1</title>
     <style>
         table {
             width: 100%;
@@ -123,6 +123,7 @@
             const parsedRangeIP = parseIPv6(rangeIP);
             const rangeBits = parsedRangeIP.slice(0, Math.floor(prefixLength / 4));
             const ipBits = parsedIP.slice(0, Math.floor(prefixLength / 4));
+            console.log(`Comparing IP: ${ipBits} with Range: ${rangeBits}`);
             return rangeBits === ipBits;
         }
 
@@ -131,6 +132,8 @@
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
 
+            console.log(`Searching for IP: ${input}`);
+            
             rows.forEach((row, index) => {
                 if (index === 0) return; // Pomijaj nagłówki tabeli
                 const cells = row.querySelectorAll('td');
@@ -138,7 +141,8 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    if (isInRange(input, cellText.split(',')[0])) { // Zakłada, że pierwszy element to zakres
+                    const range = cellText.split(',')[0];
+                    if (isInRange(input, range)) { // Zakłada, że pierwszy element to zakres
                         match = true;
                     }
                 });
