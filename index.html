@@ -29,10 +29,6 @@
             width: 100%;
             box-sizing: border-box;
         }
-        #map {
-            height: 400px;
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -46,10 +42,8 @@
     <table id="csv-table">
         <!-- Tabela zostanie wypełniona dynamicznie -->
     </table>
-    <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ipv6.min.js"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
@@ -73,7 +67,7 @@
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
-            const ipAddress = input.toLowerCase();
+            const searchIp = input.toLowerCase();
 
             rows.forEach((row, index) => {
                 if (index === 0) return; // Pomijaj nagłówki tabeli
@@ -82,12 +76,12 @@
 
                 // Sprawdzanie adresu IP
                 const cellText = cells[0].textContent.trim().toLowerCase(); // Pierwsza kolumna z adresem IP
-                if (ipAddress.includes('/')) {
-                    const [ip, mask] = ipAddress.split('/');
+                if (searchIp.includes('/')) {
+                    const [ip, mask] = searchIp.split('/');
                     if (ipAddressInRange(cellText, ip, parseInt(mask))) {
                         match = true;
                     }
-                } else if (cellText.includes(ipAddress)) {
+                } else if (cellText.includes(searchIp)) {
                     match = true;
                 }
 
@@ -142,48 +136,11 @@
             }
         }
 
-        // Funkcja inicjalizująca mapę
-        function initMap() {
-            const map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 8,
-                center: { lat: 0, lng: 0 } // Początkowe centrum mapy
-            });
-            return map;
-        }
-
-        // Funkcja dodająca markery do mapy
-        function addMarkers(map, locations) {
-            locations.forEach(location => {
-                new google.maps.Marker({
-                    position: { lat: location.lat, lng: location.lng },
-                    map: map,
-                    title: location.name
-                });
-            });
-        }
-
-        // Aktualizuj mapę na podstawie danych lokalizacji
-        async function updateMap() {
-            try {
-                const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/locations.json`);
-                if (!response.ok) {
-                    throw new Error('Błąd podczas pobierania lokalizacji: ' + response.statusText);
-                }
-                const locations = await response.json();
-                const map = initMap();
-                addMarkers(map, locations);
-            } catch (error) {
-                console.error('Błąd:', error);
-                alert('Nie udało się pobrać lokalizacji. Spróbuj ponownie później.');
-            }
-        }
-
         // Inicjalizacja strony
         document.addEventListener('DOMContentLoaded', () => {
             populateSelect();
             document.getElementById('csv-select').addEventListener('change', onFileChange);
             document.getElementById('search-input').addEventListener('input', filterTable);
-            updateMap(); // Inicjalizuj mapę
         });
 
         // Pobierz mapowanie nazw plików na przyjazne nazwy
