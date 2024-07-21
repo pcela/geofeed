@@ -48,7 +48,7 @@
     </table>
     <div id="map"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ipv6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ip-address.min.js"></script>
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
@@ -151,13 +151,17 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    if (input.includes(':') && input.includes('/')) { // Zakłada, że szukany tekst jest adresem IP z maską
-                        const ipAddress = new Address6(input);
-                        if (ipAddress.isValid()) {
-                            match = true; // Prosta walidacja, można rozszerzyć
+                    try {
+                        const ip = new Address6(input);
+                        if (ip.isValid()) {
+                            // Dopasowanie IP w formacie CIDR lub jakiekolwiek inne zaawansowane sprawdzenie
+                            match = true;
                         }
-                    } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
-                        match = true;
+                    } catch (e) {
+                        // Jeśli input nie jest poprawnym IP
+                        if (cellText.toLowerCase().includes(input.toLowerCase())) {
+                            match = true;
+                        }
                     }
                 });
 
@@ -180,7 +184,6 @@
             document.getElementById('csv-select').addEventListener('change', onFileChange);
             document.getElementById('search-input').addEventListener('input', filterTable);
         });
-
     </script>
 </body>
 </html>
