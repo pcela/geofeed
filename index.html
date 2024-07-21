@@ -29,10 +29,6 @@
             width: 100%;
             box-sizing: border-box;
         }
-        #map {
-            height: 400px;
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -46,112 +42,94 @@
     <table id="csv-table">
         <!-- Tabela zostanie wypełniona dynamicznie -->
     </table>
-    <div id="map"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ip-address@9.0.5/dist/ipv6.min.js"></script>
     <script>
         const repo = 'pcela/geofeed'; // Zastąp swoją nazwą użytkownika i nazwą repozytorium
         const branch = 'main'; // Zastąp nazwą głównej gałęzi
 
-        // Pobierz mapowanie nazw plików na przyjazne nazwy
         async function getFileMappings() {
-            try {
-                const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/mapping.json`);
-                if (!response.ok) {
-                    throw new Error('Błąd podczas pobierania mapowania: ' + response.statusText);
-                }
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Błąd:', error);
-                alert('Nie udało się pobrać mapowania plików. Spróbuj ponownie później.');
-                return {};
-            }
+            const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/mapping.json`);
+            return await response.json();
         }
 
-        // Pobierz listę plików CSV z repozytorium
         async function getCSVFiles() {
-            try {
-                const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`);
-                if (!response.ok) {
-                    throw new Error('Błąd podczas pobierania listy plików: ' + response.statusText);
-                }
-                const data = await response.json();
-                return data.tree.filter(file => file.path.endsWith('.csv')).map(file => file.path);
-            } catch (error) {
-                console.error('Błąd:', error);
-                alert('Nie udało się pobrać listy plików CSV. Spróbuj ponownie później.');
-                return [];
-            }
+            const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`);
+            const data = await response.json();
+            return data.tree.filter(file => file.path.endsWith('.csv')).map(file => file.path);
         }
 
-        // Wypełnij rozwijane menu plikami CSV
         async function populateSelect() {
-            document.getElementById('loading').style.display = 'block';
-            try {
-                const csvFiles = await getCSVFiles();
-                const fileMappings = await getFileMappings();
-                const select = document.getElementById('csv-select');
-                csvFiles.forEach(file => {
-                    const option = document.createElement('option');
-                    option.value = file;
-                    option.textContent = fileMappings[file] || file; // Użyj przyjaznej nazwy lub domyślnej nazwy pliku
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Błąd:', error);
-                alert('Nie udało się wypełnić listy plików CSV. Spróbuj ponownie później.');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
+            const csvFiles = await getCSVFiles();
+            const fileMappings = await getFileMappings();
+            const select = document.getElementById('csv-select');
+            csvFiles.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file;
+                option.textContent = fileMappings[file] || file; // Użyj przyjaznej nazwy lub domyślnej nazwy pliku
+                select.appendChild(option);
+            });
         }
 
-        // Pobierz i wyświetl plik CSV
         async function fetchCSV(file) {
-            try {
-                const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/${file}`);
-                if (!response.ok) {
-                    throw new Error('Błąd podczas pobierania pliku CSV: ' + response.statusText);
-                }
-                const data = await response.text();
-                const rows = data.split('\n').map(row => row.split(','));
+            const response = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/${file}`);
+            const data = await response.text();
+            const rows = data.split('\n').map(row => row.split(','));
 
-                const table = document.getElementById('csv-table');
-                table.innerHTML = ''; // Wyczyść tabelę przed załadowaniem nowego pliku
+            const table = document.getElementById('csv-table');
+            table.innerHTML = ''; // Wyczyść tabelę przed załadowaniem nowego pliku
 
-                // Dodaj nagłówki tabeli
-                const headerRow = document.createElement('tr');
-                rows[0].forEach(header => {
-                    const th = document.createElement('th');
-                    th.textContent = header;
-                    headerRow.appendChild(th);
+            // Dodaj nagłówki tabeli
+            const headerRow = document.createElement('tr');
+            rows[0].forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            // Dodaj wiersze tabeli
+            for (let i = 1; i < rows.length; i++) {
+                const tr = document.createElement('tr');
+                rows[i].forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
                 });
-                table.appendChild(headerRow);
-
-                // Dodaj wiersze tabeli
-                for (let i = 1; i < rows.length; i++) {
-                    const tr = document.createElement('tr');
-                    rows[i].forEach(cell => {
-                        const td = document.createElement('td');
-                        td.textContent = cell;
-                        tr.appendChild(td);
-                    });
-                    table.appendChild(tr);
-                }
-            } catch (error) {
-                console.error('Błąd:', error);
-                alert('Nie udało się wczytać pliku CSV. Spróbuj ponownie później.');
+                table.appendChild(tr);
             }
         }
 
-        // Filtruj tabelę na podstawie tekstu w polu wyszukiwania
-        function filterTable() {
+        function parseIPv6(ip) {
+            const segments = ip.split(':');
+            const parsedSegments = [];
+
+            for (let segment of segments) {
+                if (segment === '') {
+                    const fillSegments = 8 - segments.length + 1;
+                    for (let i = 0; i < fillSegments; i++) {
+                        parsedSegments.push('0000');
+                    }
+                } else {
+                    parsedSegments.push(segment.padStart(4, '0'));
+                }
+            }
+
+            return parsedSegments.join('');
+        }
+
+        function isInRange(ip, range) {
+            const [rangeIP, prefixLength] = range.split('/');
+            const parsedIP = parseIPv6(ip);
+            const parsedRangeIP = parseIPv6(rangeIP);
+            const rangeBits = parsedRangeIP.slice(0, Math.floor(prefixLength / 4));
+            const ipBits = parsedIP.slice(0, Math.floor(prefixLength / 4));
+            return rangeBits === ipBits;
+        }
+
+        async function filterTable() {
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
-
-            // Opóźnione zainicjowanie Address6
-            const ipAddress = new Address6(input);
 
             rows.forEach((row, index) => {
                 if (index === 0) return; // Pomijaj nagłówki tabeli
@@ -160,13 +138,7 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    if (ipAddress.isValid()) {
-                        const [network, prefixLength] = cellText.split('/');
-                        const networkAddress = new Address6(network);
-                        if (ipAddress.isInSubnet(networkAddress, prefixLength)) {
-                            match = true;
-                        }
-                    } else if (cellText.toLowerCase().includes(input.toLowerCase())) {
+                    if (isInRange(input, cellText)) {
                         match = true;
                     }
                 });
@@ -175,7 +147,6 @@
             });
         }
 
-        // Funkcja wywoływana po zmianie wybranego pliku
         function onFileChange() {
             const select = document.getElementById('csv-select');
             const selectedFile = select.value;
@@ -184,7 +155,6 @@
             }
         }
 
-        // Inicjalizacja strony
         document.addEventListener('DOMContentLoaded', () => {
             populateSelect();
             document.getElementById('csv-select').addEventListener('change', onFileChange);
