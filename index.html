@@ -41,7 +41,9 @@
                 if (!response.ok) {
                     throw new Error('Błąd podczas pobierania mapowania');
                 }
-                return await response.json();
+                const data = await response.json();
+                console.log('Mapa plików:', data); // Dodano logowanie mapy plików
+                return data;
             } catch (error) {
                 console.error('Błąd:', error);
                 return {};
@@ -56,7 +58,9 @@
                     throw new Error('Błąd podczas pobierania plików');
                 }
                 const data = await response.json();
-                return data.tree.filter(file => file.path.endsWith('.csv')).map(file => file.path);
+                const csvFiles = data.tree.filter(file => file.path.endsWith('.csv')).map(file => file.path);
+                console.log('Pliki CSV:', csvFiles); // Dodano logowanie plików CSV
+                return csvFiles;
             } catch (error) {
                 console.error('Błąd:', error);
                 return [];
