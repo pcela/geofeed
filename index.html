@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV1</title>
+    <title>Wyświetlanie plików CSV</title>
     <style>
         table {
             width: 100%;
@@ -88,15 +88,15 @@
             table.appendChild(headerRow);
 
             // Dodaj wiersze tabeli
-            for (let i = 1; i < rows.length; i++) {
+            rows.slice(1).forEach(row => {
                 const tr = document.createElement('tr');
-                rows[i].forEach(cell => {
+                row.forEach(cell => {
                     const td = document.createElement('td');
                     td.textContent = cell;
                     tr.appendChild(td);
                 });
                 table.appendChild(tr);
-            }
+            });
         }
 
         function ipv6ToBinary(ip) {
@@ -121,37 +121,38 @@
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
-
-            let bestMatchRow = null;
-            let maxPrefixLength = -1;
+            let matchedRows = [];
 
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header row
                 const cells = row.querySelectorAll('td');
+                let isMatch = false;
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
                     if (cellText.includes('/')) { // Check if cell contains a range
                         if (isInRange(input, cellText)) {
-                            const prefixLength = parseInt(cellText.split('/')[1], 10);
-                            if (prefixLength > maxPrefixLength) {
-                                bestMatchRow = row;
-                                maxPrefixLength = prefixLength;
-                            }
+                            isMatch = true;
                         }
+                    } else if (input && cellText.toLowerCase().includes(input.toLowerCase())) {
+                        isMatch = true;
                     }
                 });
+
+                if (isMatch) {
+                    matchedRows.push(row);
+                }
             });
 
-            // Hide all rows initially
+            // Hide all rows
             rows.forEach(row => {
                 row.style.display = 'none';
             });
 
-            // Show only the best match
-            if (bestMatchRow) {
-                bestMatchRow.style.display = '';
-            }
+            // Show matched rows
+            matchedRows.forEach(row => {
+                row.style.display = '';
+            });
         }
 
         function onFileChange() {
