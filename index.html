@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyświetlanie plików CSV6</title>
+    <title>Wyświetlanie plików CSV7</title>
     <style>
         table {
             width: 100%;
@@ -100,41 +100,30 @@
         }
 
         function parseIPv6(ip) {
-            // Pad to full 128-bit representation
-            const segments = ip.split(':');
-            const parsedSegments = [];
-
-            for (let segment of segments) {
-                if (segment === '') {
-                    const fillSegments = 8 - segments.length + 1;
-                    for (let i = 0; i < fillSegments; i++) {
-                        parsedSegments.push('0000');
-                    }
-                } else {
-                    parsedSegments.push(segment.padStart(4, '0'));
-                }
-            }
-
-            return parsedSegments.join('');
+            // Convert IPv6 address to binary string
+            const parts = ip.split(':');
+            const bin = parts.map(part => part.padStart(4, '0')).join('');
+            return bin;
         }
 
         function isInRange(ip, range) {
             const [rangeIP, prefixLength] = range.split('/');
-            const parsedIP = parseIPv6(ip);
-            const parsedRangeIP = parseIPv6(rangeIP);
+            const ipBin = parseIPv6(ip);
+            const rangeBin = parseIPv6(rangeIP);
 
-            const ipBinary = parsedIP.slice(0, prefixLength);
-            const rangeBinary = parsedRangeIP.slice(0, prefixLength);
-
-            return ipBinary === rangeBinary;
+            // Check if the IP is within the specified range
+            const ipPart = ipBin.slice(0, parseInt(prefixLength, 10));
+            const rangePart = rangeBin.slice(0, parseInt(prefixLength, 10));
+            
+            return ipPart === rangePart;
         }
 
         function filterTable() {
             const input = document.getElementById('search-input').value.trim();
             const table = document.getElementById('csv-table');
             const rows = table.querySelectorAll('tr');
-
-            let matches = [];
+            
+            let matchedRows = [];
 
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header row
@@ -144,20 +133,19 @@
 
                 cells.forEach(cell => {
                     const cellText = cell.textContent.trim();
-                    if (cellText.includes('/')) { // Check if the cell contains a range
-                        const [range, prefixLength] = cellText.split('/');
+                    if (cellText.includes('/')) { // Check if cell contains a range
                         if (isInRange(input, cellText)) {
-                            const length = parseInt(prefixLength, 10);
-                            if (length > maxPrefixLength) {
+                            const prefixLength = parseInt(cellText.split('/')[1], 10);
+                            if (prefixLength > maxPrefixLength) {
                                 bestMatch = row;
-                                maxPrefixLength = length;
+                                maxPrefixLength = prefixLength;
                             }
                         }
                     }
                 });
 
                 if (bestMatch) {
-                    matches.push(bestMatch);
+                    matchedRows.push(bestMatch);
                 }
             });
 
@@ -167,7 +155,7 @@
             });
 
             // Show only the best matches
-            matches.forEach(row => {
+            matchedRows.forEach(row => {
                 row.style.display = '';
             });
         }
