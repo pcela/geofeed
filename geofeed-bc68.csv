@@ -1,0 +1,3 @@
+#Network,#Country,#Region,#City,#Postal_Code
+2a0a:6044:bc68:6601:/64,FI-18,Espoo,02330
+2a0a:6044:bc68::/48,FI,FI-18,Helsinki,00210
