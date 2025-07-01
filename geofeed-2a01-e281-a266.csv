@@ -1,2 +1,5 @@
 #Network,#Country,#Region,#City,#Postal_Code
+2a01:e281:a266:6172::/64,DE,DE-HE,Frankfurt,60326
+2a01:e281:a266:6602::/64,DE,DE-HE,Frankfurt,60326
+2a01:e281:a266:6a66::/64,DE,DE-HE,Frankfurt,60326
 2a01:e281:a266::/48,DE,DE-HE,Frankfurt,65929
