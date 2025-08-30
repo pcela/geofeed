@@ -1,0 +1,3 @@
+#Network,#Country,#Region,#City,#Postal_Code
+2a14:7581:3966:6602::/64,DE,DE-HE,Frankfurt,62326
+2a14:7581:3966::/48,DE,DE-HE,Frankfurt,61326
