@@ -1,9 +1,0 @@
-#Network,#Country,#Region,#City,#Postal_Code
-2a0a:6044:bcff:6c6f:6e61::1/128,NL,NL-NH,Amsterdam,1098 XG
-2a0a:6044:bcff:6c6f:7077::1/128,PL,PL-14,Warszawa,00-697
-2a0a:6044:bcff:6e73:6e61::/80,NL,NL-NH,Amsterdam,1098 XG
-2a0a:6044:bcff:7263:6e61::/80,NL,NL-NH,Amsterdam,1098 XG
-2a0a:6044:bcff:6c61::/64,NL,NL-NH,Amsterdam,1098 XG
-2a0a:6044:bcff:6c68::/64,FI,FI-18,Helsinki,00210
-2a0a:6044:bcff:7277::/64,PL,PL-14,Warszawa,00-697
-2a0a:6044:bcff::/48,PL,PL-14,Warszawa,02-241
